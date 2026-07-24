@@ -242,8 +242,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     cornerY = bookRect.height; // Canto inferior
                 }
 
-                // Determina canto horizontal (direita vs esquerda) em coordenadas relativas ao livro
-                if (activeDragPage.index % 2 === 0) {
+                // No celular há uma página por vez: o sentido do gesto define
+                // o canto. Em páginas duplas, preservamos a regra atual baseada
+                // no lado da página que recebeu o arraste.
+                if (pageFlip.getOrientation() === "portrait") {
+                    cornerX = deltaX < 0 ? bookRect.width : 0;
+                } else if (activeDragPage.index % 2 === 0) {
                     cornerX = bookRect.width; // Canto direito
                 } else {
                     cornerX = 0; // Canto esquerdo
@@ -265,7 +269,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 const bookRect = bookElement.getBoundingClientRect();
                 const relX = clientX - bookRect.left;
                 const relY = clientY - bookRect.top;
-                pageFlip.userStop({ x: relX, y: relY }, isTouch);
+                // O PageFlip só conclui o movimento manual quando isSwipe é
+                // falso. Passar true aqui deixava o livro preso após um toque.
+                pageFlip.userStop({ x: relX, y: relY }, false);
             }
             isClicking = false;
             dragStarted = false;
