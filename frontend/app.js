@@ -93,8 +93,13 @@ function getPageDimensions() {
     const isPortrait = window.matchMedia("(max-width: 768px)").matches;
     const horizontalPadding = isPortrait ? 24 : 96;
     const verticalPadding = isPortrait ? 88 : 56;
-    const availableWidth = Math.max(180, window.innerWidth - horizontalPadding);
-    const vh = Math.max(280, window.innerHeight - verticalPadding);
+    // visualViewport acompanha a área realmente visível em celulares, inclusive
+    // quando a barra do navegador aparece ou desaparece.
+    const viewport = window.visualViewport;
+    const viewportWidth = viewport ? viewport.width : window.innerWidth;
+    const viewportHeight = viewport ? viewport.height : window.innerHeight;
+    const availableWidth = Math.max(180, viewportWidth - horizontalPadding);
+    const vh = Math.max(280, viewportHeight - verticalPadding);
 
     // Largura máxima de uma página (metade do viewport em modo de duas páginas)
     const halfVW = isPortrait ? availableWidth : availableWidth / 2;
@@ -267,8 +272,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const resizeBook = () => {
             const isPortrait = window.matchMedia("(max-width: 768px)").matches;
-            const viewportWidth = Math.max(180, window.innerWidth - (isPortrait ? 24 : 96));
-            const viewportHeight = Math.max(280, window.innerHeight - (isPortrait ? 88 : 56));
+            const viewport = window.visualViewport;
+            const visibleWidth = viewport ? viewport.width : window.innerWidth;
+            const visibleHeight = viewport ? viewport.height : window.innerHeight;
+            const viewportWidth = Math.max(180, visibleWidth - (isPortrait ? 24 : 96));
+            const viewportHeight = Math.max(280, visibleHeight - (isPortrait ? 88 : 56));
             const ratio = 800 / 550;
             const widthFromHeight = (viewportHeight / ratio) * (isPortrait ? 1 : 2);
             const naturalWidth = isPortrait ? 550 : 1100;
@@ -280,12 +288,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Ajusta o livro e as páginas ao redimensionar a janela
         let resizeTimer = null;
-        window.addEventListener("resize", () => {
+        const scheduleResize = () => {
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(() => {
                 resizeBook();
             }, 150);
-        });
+        };
+
+        window.addEventListener("resize", scheduleResize);
+        window.addEventListener("orientationchange", scheduleResize);
+        window.visualViewport?.addEventListener("resize", scheduleResize);
 
         resizeBook();
 
