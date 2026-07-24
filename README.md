@@ -2,6 +2,8 @@
 
 Aplicação web interativa que simula um álbum de figurinhas da temporada 2026 de Fórmula 1. O frontend exibe o álbum com efeito de virada de página e o backend FastAPI fornece as 55 imagens das figurinhas.
 
+🏎️ **[Acesse o álbum online](https://albumfigurinhas-f1.onrender.com/frontend/)**
+
 ## Recursos
 
 - Álbum navegável por setas, teclado ou arraste.
