@@ -135,21 +135,51 @@ document.addEventListener("DOMContentLoaded", () => {
     let isMuted = false;
     let pageFlip = null;
 
+    const getBookSize = () => {
+        const isMobile = window.matchMedia("(max-width: 768px)").matches;
+        const viewport = window.visualViewport;
+        const visibleWidth = viewport ? viewport.width : window.innerWidth;
+        const visibleHeight = viewport ? viewport.height : window.innerHeight;
+        const horizontalSpace = isMobile ? 24 : 96;
+        const verticalSpace = isMobile ? 88 : 56;
+        const availableWidth = Math.max(180, visibleWidth - horizontalSpace);
+        const availableHeight = Math.max(280, visibleHeight - verticalSpace);
+        const pageRatio = 800 / 550;
+        const bookRatio = isMobile ? pageRatio : pageRatio / 2;
+        const width = Math.min(isMobile ? 550 : 1100, availableWidth, availableHeight / bookRatio);
+
+        return {
+            width: Math.floor(width),
+            height: Math.floor(width * bookRatio)
+        };
+    };
+
+    const resizeBook = () => {
+        const size = getBookSize();
+        bookElement.style.width = `${size.width}px`;
+        bookElement.style.height = `${size.height}px`;
+        pageFlip?.update();
+    };
+
     // 1. Initialize St.PageFlip
     try {
+        // Com autoSize desativado, este elemento passa a ser a fonte única das
+        // dimensões do PageFlip. Assim, uma tela estreita sempre usa uma página.
+        resizeBook();
         const dims = getPageDimensions();
         pageFlip = new St.PageFlip(bookElement, {
             width: dims.width,   // Calculado dinamicamente
             height: dims.height, // Calculado dinamicamente
             size: "stretch",
-            minWidth: dims.minWidth,
+            minWidth: 120,
             maxWidth: dims.maxWidth,
-            minHeight: dims.minHeight,
+            minHeight: 180,
             maxHeight: dims.maxHeight,
             drawShadow: true,
             maxShadowOpacity: 0.4,
             showCover: true,
             usePortrait: true,
+            autoSize: false,
             mobileScrollSupport: true,
             useMouseEvents: false,
             showPageCorners: false,
@@ -269,22 +299,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Show book after successful initialization
         bookElement.style.display = "block";
-
-        const resizeBook = () => {
-            const isPortrait = window.matchMedia("(max-width: 768px)").matches;
-            const viewport = window.visualViewport;
-            const visibleWidth = viewport ? viewport.width : window.innerWidth;
-            const visibleHeight = viewport ? viewport.height : window.innerHeight;
-            const viewportWidth = Math.max(180, visibleWidth - (isPortrait ? 24 : 96));
-            const viewportHeight = Math.max(280, visibleHeight - (isPortrait ? 88 : 56));
-            const ratio = 800 / 550;
-            const widthFromHeight = (viewportHeight / ratio) * (isPortrait ? 1 : 2);
-            const naturalWidth = isPortrait ? 550 : 1100;
-            const bookWidth = Math.min(naturalWidth, viewportWidth, widthFromHeight);
-
-            bookElement.style.width = `${Math.floor(bookWidth)}px`;
-            bookElement.style.height = `${Math.floor(Math.min(viewportHeight, (bookWidth / (isPortrait ? 1 : 2)) * ratio))}px`;
-        };
 
         // Ajusta o livro e as páginas ao redimensionar a janela
         let resizeTimer = null;
@@ -415,13 +429,25 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         // Click events for navigational arrows
-        btnPrev.addEventListener("click", () => {
-            pageFlip.flipPrev();
-        });
+        const navigate = (direction) => (event) => {
+            // Alguns navegadores móveis não disparam click de forma confiável
+            // sobre controles que ficam acima de uma área de arraste.
+            event.preventDefault();
+            event.stopPropagation();
 
-        btnNext.addEventListener("click", () => {
-            pageFlip.flipNext();
-        });
+            if (direction === "next") {
+                pageFlip.flipNext();
+            } else {
+                pageFlip.flipPrev();
+            }
+        };
+
+        const goPrev = navigate("prev");
+        const goNext = navigate("next");
+        btnPrev.addEventListener("click", goPrev);
+        btnNext.addEventListener("click", goNext);
+        btnPrev.addEventListener("touchend", goPrev, { passive: false });
+        btnNext.addEventListener("touchend", goNext, { passive: false });
 
         // Keyboard events for navigational arrows
         document.addEventListener("keydown", (e) => {

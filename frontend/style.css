@@ -109,7 +109,8 @@ body {
   height: 56px;
   border-radius: 50%;
   cursor: pointer;
-  z-index: 90;
+  z-index: 1000;
+  touch-action: manipulation;
   display: flex;
   align-items: center;
   justify-content: center;
