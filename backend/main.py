@@ -14,6 +14,10 @@ PASTA_FRONTEND = os.path.abspath(os.path.join(PASTA_BASE, "..", "frontend"))
 # Cria a aplicação FastAPI
 app = FastAPI()
 
+@app.get("/")
+def pagina_inicial():
+    return FileResponse(os.path.join(PASTA_FRONTEND, "index.html"))
+
 # Monta o frontend para servir os arquivos estáticos
 app.mount("/frontend", StaticFiles(directory=PASTA_FRONTEND, html=True), name="frontend")
 
