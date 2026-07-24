@@ -150,7 +150,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         return {
             width: Math.floor(width),
-            height: Math.floor(width * bookRatio)
+            height: Math.floor(width * bookRatio),
+            minPageWidth: isMobile ? 400 : 180
         };
     };
 
@@ -158,6 +159,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const size = getBookSize();
         bookElement.style.width = `${size.width}px`;
         bookElement.style.height = `${size.height}px`;
+        // O PageFlip usa este limite para decidir entre livro aberto e página
+        // única. Em telas móveis, 400px impede o modo de duas páginas.
+        if (pageFlip) {
+            pageFlip.getSettings().minWidth = size.minPageWidth;
+        }
         pageFlip?.update();
     };
 
@@ -171,7 +177,7 @@ document.addEventListener("DOMContentLoaded", () => {
             width: dims.width,   // Calculado dinamicamente
             height: dims.height, // Calculado dinamicamente
             size: "stretch",
-            minWidth: 120,
+            minWidth: window.matchMedia("(max-width: 768px)").matches ? 400 : 180,
             maxWidth: dims.maxWidth,
             minHeight: 180,
             maxHeight: dims.maxHeight,
