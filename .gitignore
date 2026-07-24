@@ -1,0 +1,29 @@
+# Ambiente virtual e dependências locais
+.venv/
+venv/
+env/
+
+# Cache e arquivos compilados do Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+
+# Cobertura de testes
+.coverage
+coverage.xml
+htmlcov/
+
+# Variáveis de ambiente e arquivos locais
+.env
+.env.*
+!.env.example
+
+# Editores e sistema operacional
+.vscode/
+.idea/
+*.code-workspace
+.DS_Store
+Thumbs.db
